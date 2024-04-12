@@ -12,7 +12,7 @@ TIME = 3600  # 3600 секунд в одном часе
 # Логи
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log_handler = RotatingFileHandler(
-    filename='bot.log', mode='a', maxBytes=5*1024*1024, backupCount=0, encoding=None, delay=False
+    filename='bot.log', mode='a', maxBytes=5*1024*1024, backupCount=1, encoding=None, delay=False
 )
 log_handler.setFormatter(formatter)
 log_handler.setLevel(logging.DEBUG)
