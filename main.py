@@ -57,8 +57,28 @@ def process_link(link, chat_id, user_id, message_id):
                     user_id=user_id
                 )
     except Exception as e:
-        log.error(f"Ошибка при обработке ссылки: ${e}")
+        log.error(f"Ошибка при обработке ссылки: {e}")
 
+# Функция для проверки админских прав
+def is_admin(chat_id, user_id):
+    try:
+        response = vk.messages.getConversationMembers(peer_id=int(2E9) + chat_id)
+        for member in response['items']:
+            if member['member_id'] == user_id and 'is_admin' in member and member['is_admin']:
+                return True
+    except Exception as e:
+        log.error(f"Ошибка при проверке админских прав: {e}")
+    return False
+
+# Функция для кика пользователя
+def kick_user(chat_id, user_id):
+    try:
+        vk.messages.removeChatUser(
+            chat_id=chat_id,
+            user_id=user_id
+        )
+    except Exception as e:
+        log.error(f"Ошибка при попытке кикнуть пользователя: {e}")
 
 def main():
     try:
@@ -70,14 +90,34 @@ def main():
                 chat_id = event.chat_id
                 user_id = event.user_id
                 message_id = event.message_id
+
+                # Проверка на команду !расстрел
+                if message.startswith('!расстрел') and is_admin(chat_id, user_id):
+                    log.error(event.extra_values)
+                    mentioned_user_id = event.extra_values.get('mentions', [])[0] if event.extra_values.get('mentions') else None
+                    if mentioned_user_id:
+                        gif_id="doc674276092_678385113"
+                        vk.messages.send(
+                            chat_id=chat_id,
+                            message=f"@id{mentioned_user_id}\nЗа неповиновение представителю власти вы приговариваетесь к высшей мере наказания — расстрелу!",
+                            attachment=gif_id,
+                            random_id=0
+                        )
+                        kick_user(chat_id, mentioned_user_id)
+                    else:
+                        vk.messages.send(
+                            chat_id=chat_id,
+                            message="Команда должна быть ответом на сообщение пользователя, которого нужно расстрелять.",
+                            random_id=0
+                        )
+
                 # Разбиваем сообщение на слова
                 words = message.split()
                 # Перебираем слова в сообщении
                 for word in words:
                     process_link(word, chat_id, user_id, message_id)
     except Exception as e:
-        log.error(f"Ошибка в главном цикле: ${e}")
-
+        log.error(f"Ошибка в главном цикле: {e}")
 
 if __name__ == "__main__":
     main()
