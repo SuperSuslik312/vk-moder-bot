@@ -59,6 +59,7 @@ def process_link(text, chat_id, user_id, message_id):
         parsed = urlparse(text)
         # Проверяем, что текст выглядит как ссылка
         if parsed.netloc or ('.' in text and len(text.split('.')[-1]) >= 2):
+            vk.account.setOnline()
             # Удаляем сообщение и кикаем пользователя
             vk.messages.delete(
                 delete_for_all=1,
@@ -96,6 +97,7 @@ def main():
                         if attachment_type == 'link':
                             link = event.attachments['attach1_url']
                             log.info(f"Обнаружена ссылка во вложении: {link}")
+                            vk.account.setOnline()
                             vk.messages.delete(
                                 delete_for_all=1,
                                 message_ids=message_id
@@ -109,6 +111,7 @@ def main():
                 # Обработка команды !расстрел
                 if message.startswith('!расстрел'):
                     if is_admin(chat_id, user_id):
+                        vk.account.setOnline()
                         mentioned_user_id = event.extra_values.get('mentions', [])[0] if event.extra_values.get('mentions') else None
                         if mentioned_user_id:
                             gif_id = "doc674276092_678385113"
